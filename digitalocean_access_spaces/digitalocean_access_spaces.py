@@ -105,8 +105,8 @@ if __name__ == '__main__':
 
     spaces = digitalocean_spaces()
 
-    # #ファイルのアップロード
-    # spaces.sendfile_to_spaces('requirements.txt', 'test/test2')
+    #ファイルのアップロード
+    spaces.sendfile_to_spaces('requirements.txt', 'test')
     # #ファイルのダウンロード
     # spaces.download_from_spaces('test/requirements.txt', 'test')
 
