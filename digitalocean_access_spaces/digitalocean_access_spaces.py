@@ -80,7 +80,7 @@ class digitalocean_spaces :
 
             for fld_key in contents['folder']:
                 fld_from = os.path.join(target_folder_from, fld_key)
-                spaces.download_from_spaces(fld_from, targetfld_to)
+                self.download_from_spaces(fld_from, targetfld_to)
 
             #そのフォルダにあるファイルをDL
             for file_key in contents['file']:
@@ -127,8 +127,8 @@ if __name__ == '__main__':
 
     spaces = digitalocean_spaces()
 
-    #ファイルのアップロード
-    spaces.sendfile_to_spaces('requirements.txt', 'test')
+    # #ファイルのアップロード
+    # spaces.sendfile_to_spaces('requirements.txt', 'test')
     
     # #ファイルのダウンロード(指定するのがフォルダだったら、そのフォルダ下のファイル・フォルダをマルっとDL)
     os.mkdir('temp_data')
