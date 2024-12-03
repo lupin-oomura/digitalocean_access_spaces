@@ -51,20 +51,41 @@ class digitalocean_spaces :
                 Metadata = {'x-amz-meta-my-key': 'your-value'}
             )
 
+    def __download_file(self, targetfile_fullpath:str, targetfld_to:str):
+        file_from = targetfile_fullpath.replace('\\', '/')
+        fn = os.path.basename(targetfile_fullpath)
+        file_to   = os.path.join(targetfld_to, fn)
+        self.client.download_file(self.SPACES_BUCKET_NAME, file_from, file_to)
 
     def download_from_spaces(self, targetfile_fullpath:str, targetfld_to:str):
         """
         DigitalOcean Spacesから指定されたファイルをダウンロードする関数です。
 
         Args:
-            targetfile_fullpath (str): ダウンロードするファイルのSpaces内での完全なパス。区切りは「/」で書いてください。
+            targetfile_fullpath (str): ダウンロードするファイルのSpaces内での完全なパス。もしフォルダを指定していたら、そのフォルダ下のファイル/フォルダをまるっとDL
             targetfld_to (str): ダウンロードしたファイルを保存するローカルフォルダ名。
                                 このパスにファイルが保存されます。
         """
-        # ファイルをS3バケットからダウンロード
-        fn = os.path.basename(targetfile_fullpath)
-        self.client.download_file(self.SPACES_BUCKET_NAME, targetfile_fullpath.replace('\\', '/'), os.path.join(targetfld_to, fn))
 
+        contents = self.list_files_and_folders(targetfile_fullpath)
+        if len(contents['file']) == 0 and len(contents['folder']) == 0 :
+            #`targetfile_fullpath`がファイルだったケース
+            self.__download_file(targetfile_fullpath, targetfld_to)
+        else :
+            #`targetfile_fullpath`がフォルダだったケース
+            target_folder_to   = os.path.join(targetfld_to, targetfile_fullpath)
+            target_folder_from = targetfile_fullpath
+            if not os.path.exists(target_folder_to) :
+                os.mkdir(target_folder_to)
+
+            for fld_key in contents['folder']:
+                fld_from = os.path.join(target_folder_from, fld_key)
+                spaces.download_from_spaces(fld_from, targetfld_to)
+
+            #そのフォルダにあるファイルをDL
+            for file_key in contents['file']:
+                file_path = os.path.join(target_folder_from, file_key)
+                self.__download_file(file_path, target_folder_to)
 
 
     def list_files_and_folders(self, folder_name:str) -> dict:
@@ -80,6 +101,7 @@ class digitalocean_spaces :
         """
 
         prefix = folder_name + ('/' if folder_name[-1:] != '/' else  '')
+        prefix = prefix.replace('\\', '/')
         contents = {'file': [], 'folder': []}
         paginator = self.client.get_paginator('list_objects_v2')
         for page in paginator.paginate(Bucket=self.SPACES_BUCKET_NAME, Prefix=prefix, Delimiter='/'):
@@ -107,27 +129,7 @@ if __name__ == '__main__':
 
     #ファイルのアップロード
     spaces.sendfile_to_spaces('requirements.txt', 'test')
-    # #ファイルのダウンロード
-    # spaces.download_from_spaces('test/requirements.txt', 'test')
-
-
-    # # フォルダ内のファイル・フォルダ一覧を取得
-    # def getfiles_from_spaces(folder_name):
-    #     # フォルダ内のファイル・フォルダ一覧を取得
-    #     contents = spaces.list_files_and_folders(folder_name)
-
-    #     print(f'[ {folder_name} ]')
-    #     print('---ファイル一覧---')
-    #     for file_key in contents['file']:
-    #         print(file_key)
-    #     print('---フォルダ一覧---')
-    #     for folder_key in contents['folder']:
-    #         print(folder_key)
-
-    #     #download all files 
-    #     for file_key in contents['file']:
-    #         spaces.download_from_spaces(os.path.join(folder_name, file_key), f'digitalocean_spaces/{folder_name}')
-
-    # getfiles_from_spaces('folder1/userdata')
-    # getfiles_from_spaces('folder2/userdata')
-
+    
+    # #ファイルのダウンロード(指定するのがフォルダだったら、そのフォルダ下のファイル・フォルダをマルっとDL)
+    os.mkdir('temp_data')
+    spaces.download_from_spaces('UniMenu', f'temp_data')
