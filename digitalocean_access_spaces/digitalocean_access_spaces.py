@@ -27,8 +27,7 @@ class digitalocean_spaces :
         )
         self.SPACES_BUCKET_NAME = SPACES_BUCKET_NAME
     
-
-    def sendfile_to_spaces(self, targetfile_path:str, targetfld_to:str):
+    def sendfile_to_spaces(self, targetfile_path: str, targetfld_to: str):
         """
         指定されたファイルをDigitalOcean Spacesにアップロードする関数です。
 
@@ -36,8 +35,9 @@ class digitalocean_spaces :
             targetfile_path (str): アップロードするファイルのパス。このファイルがSpacesにアップロードされます。
             targetfld_to (str): アップロード先のSpaces内のフォルダパス。このパスにファイルが保存されます。
                                 ルートフォルダに保存する場合は、空白にしてください。（"."ではなく）
-
         """
+        # ファイルのサイズを取得
+        file_size = os.path.getsize(targetfile_path)
 
         # ファイルをS3バケットにアップロード
         targetfile_to = os.path.join(targetfld_to, os.path.basename(targetfile_path))
@@ -48,8 +48,10 @@ class digitalocean_spaces :
                 Key      = targetfile_to,
                 Body     = data,
                 ACL      = 'private',
-                Metadata = {'x-amz-meta-my-key': 'your-value'}
+                Metadata = {'x-amz-meta-my-key': 'your-value'},
+                ContentLength = file_size  # Content-Lengthを追加
             )
+
 
     def __download_file(self, targetfile_fullpath:str, targetfld_to:str):
         file_from = targetfile_fullpath.replace('\\', '/')
@@ -127,9 +129,9 @@ if __name__ == '__main__':
 
     spaces = digitalocean_spaces()
 
-    # #ファイルのアップロード
-    # spaces.sendfile_to_spaces('requirements.txt', 'test')
+    #ファイルのアップロード
+    spaces.sendfile_to_spaces('digitalocean_access_spaces/__init__.py', 'Kondate/data')
     
     # #ファイルのダウンロード(指定するのがフォルダだったら、そのフォルダ下のファイル・フォルダをマルっとDL)
-    os.mkdir('temp_data')
-    spaces.download_from_spaces('UniMenu', f'temp_data')
+    # os.mkdir('temp_data')
+    spaces.download_from_spaces('test', f'temp_data')
