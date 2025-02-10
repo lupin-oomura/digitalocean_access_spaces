@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='digitalocean_access_spaces',
-    version='1.1.4',
+    version='1.1.5',
     packages=find_packages(),
     install_requires=[
         'boto3==1.35.99',

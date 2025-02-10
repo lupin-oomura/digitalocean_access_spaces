@@ -52,6 +52,29 @@ class digitalocean_spaces :
                 ContentLength = file_size  # Content-Lengthを追加
             )
 
+    def send_to_spaces(self, target, rootfld:str=""):
+        """
+        指定されたファイルまたはフォルダをDigitalOcean Spacesにアップロードする関数です。
+
+        Args:
+            target (str): アップロードするファイルまたはフォルダのパス。
+        """
+        if os.path.isdir(target):
+            # フォルダの場合、再帰的にすべてのファイルを表示
+            for root, dirs, files in os.walk(target):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    self.sendfile_to_spaces(file_path, f'{rootfld}/{root}')
+                    print(f"DigitalOcean Spaces-Upload: {file_path}")
+        elif os.path.isfile(target):
+            parent_folder = os.path.dirname(target)
+            spacefld = os.path.join(rootfld, parent_folder)
+            self.sendfile_to_spaces(target, spacefld)
+            print(f"DigitalOcean Spaces-Upload: {target}")
+        else:
+
+            print(f"'{target}' という名前のファイルまたはフォルダは存在しません。")
+
 
     def __download_file(self, targetfile_fullpath:str, targetfld_to:str):
         file_from = targetfile_fullpath.replace('\\', '/')
