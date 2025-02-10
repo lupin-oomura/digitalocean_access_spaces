@@ -99,9 +99,10 @@ class digitalocean_spaces :
         else :
             #`targetfile_fullpath`がフォルダだったケース
             target_folder_to   = os.path.join(targetfld_to, targetfile_fullpath)
+            target_folder_to   = target_folder_to.replace('\\', '/')
             target_folder_from = targetfile_fullpath
             if not os.path.exists(target_folder_to) :
-                os.mkdir(target_folder_to)
+                os.makedirs(target_folder_to)
 
             for fld_key in contents['folder']:
                 fld_from = os.path.join(target_folder_from, fld_key)
